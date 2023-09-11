@@ -177,5 +177,17 @@ describe('AppController (e2e)', () => {
           .stores('rt', 'refresh_token');
       });
     });
+
+    describe('DELETE /auth/signout', () => {
+      const signoutRequest = () => spec().delete('/auth/signout');
+
+      it('should throw an error if access token not provided as authorization bearer', () => {
+        return signoutRequest().expectStatus(401);
+      });
+
+      it('should signout the user', () => {
+        return signoutRequest().withBearerToken('$S{at}').expectStatus(204);
+      });
+    });
   });
 });
