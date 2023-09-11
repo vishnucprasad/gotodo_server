@@ -1,6 +1,7 @@
 import { DatabaseModule } from '@app/database';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { AuthModule } from './auth/auth.module';
 import * as Joi from 'joi';
 
 @Module({
@@ -14,6 +15,7 @@ import * as Joi from 'joi';
       }),
     }),
     DatabaseModule,
+    AuthModule,
   ],
 })
 export class AppModule {}

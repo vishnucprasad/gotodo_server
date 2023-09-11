@@ -5,6 +5,7 @@ import {
   Connection,
   FilterQuery,
   Model,
+  QueryOptions,
   SaveOptions,
   Types,
   UpdateQuery,
@@ -26,7 +27,7 @@ export abstract class BaseEntityRepository<TEntity extends BaseEntity> {
       ...document,
       _id: new Types.ObjectId(),
     });
-    return await createdDocument.save(options);
+    return (await createdDocument.save(options)) as TEntity;
   }
 
   async findOne(filterQuery: FilterQuery<TEntity>): Promise<TEntity> {
@@ -43,10 +44,12 @@ export abstract class BaseEntityRepository<TEntity extends BaseEntity> {
   async findOneAndUpdate(
     filterQuery: FilterQuery<TEntity>,
     update: UpdateQuery<TEntity>,
+    options?: QueryOptions<TEntity>,
   ) {
     const document = await this.model.findOneAndUpdate(filterQuery, update, {
       lean: true,
       new: true,
+      ...options,
     });
 
     if (!document) {
