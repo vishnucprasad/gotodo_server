@@ -1,10 +1,10 @@
 import { JwtPayload, Tokens } from '@app/common';
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as argon from 'argon2';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UserRepository } from './repositories/user.repository';
+import { CreateUserDto, SigninDto } from './dto';
+import { UserRepository } from './repositories';
 import { Types } from 'mongoose';
 
 @Injectable()
@@ -39,10 +39,38 @@ export class AuthService {
       const tokens = await this.generateTokens(payload);
       await this.updateRtHash(user._id, tokens.refresh_token);
       return tokens;
-    } catch (e) {
+    } catch (error) {
       await session.abortTransaction();
-      throw e;
+
+      if (error.code === 11000) {
+        throw new ForbiddenException(`Email ${dto.email} already exists`);
+      }
+
+      throw error;
     }
+  }
+
+  public async localSignin(dto: SigninDto): Promise<Tokens> {
+    const user = await this.userRepo.findOne({ email: dto.email });
+
+    if (!user)
+      throw new ForbiddenException('No user matches this email address');
+
+    const isPasswordMatch = await argon.verify(user.hash, dto.password);
+
+    if (!isPasswordMatch)
+      throw new ForbiddenException(
+        'Invalid password. Please check your password and try again.',
+      );
+
+    const payload: JwtPayload = {
+      sub: user._id.toHexString(),
+      email: user.email,
+    };
+
+    const tokens = await this.generateTokens(payload);
+    await this.updateRtHash(user._id, tokens.refresh_token);
+    return tokens;
   }
 
   private hashData(data: string): Promise<string> {
@@ -81,9 +109,9 @@ export class AuthService {
         { session },
       );
       await session.commitTransaction();
-    } catch (e) {
+    } catch (error) {
       await session.abortTransaction();
-      throw e;
+      throw error;
     }
   }
 }
