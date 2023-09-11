@@ -48,6 +48,8 @@ export class AuthService {
       }
 
       throw error;
+    } finally {
+      await session.endSession();
     }
   }
 
@@ -95,6 +97,24 @@ export class AuthService {
     return tokens;
   }
 
+  public async signout(userId: string): Promise<void> {
+    const session = await this.userRepo.startTransaction();
+
+    try {
+      await this.userRepo.findOneAndUpdate(
+        { _id: new Types.ObjectId(userId) },
+        { rtHash: null },
+        { session },
+      );
+      await session.commitTransaction();
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      await session.endSession();
+    }
+  }
+
   public async findUserById(userId: string): Promise<User> {
     return await this.userRepo.findOne({ _id: new Types.ObjectId(userId) });
   }
@@ -138,6 +158,8 @@ export class AuthService {
     } catch (error) {
       await session.abortTransaction();
       throw error;
+    } finally {
+      await session.endSession();
     }
   }
 }

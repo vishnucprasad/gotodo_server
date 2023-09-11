@@ -2,6 +2,7 @@ import {
   Body,
   ClassSerializerInterceptor,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -46,5 +47,11 @@ export class AuthController {
     @CurrentUser('rt') rt: string,
   ): Promise<Tokens> {
     return this.authService.refreshTokens(userId, rt);
+  }
+
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Delete('signout')
+  public signout(@CurrentUser('_id') userId: string): Promise<void> {
+    return this.authService.signout(userId);
   }
 }
