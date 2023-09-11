@@ -1,5 +1,7 @@
+import { AtGuard } from '@app/common';
 import { DatabaseModule } from '@app/database';
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import * as Joi from 'joi';
@@ -16,6 +18,12 @@ import * as Joi from 'joi';
     }),
     DatabaseModule,
     AuthModule,
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: AtGuard,
+    },
   ],
 })
 export class AppModule {}
