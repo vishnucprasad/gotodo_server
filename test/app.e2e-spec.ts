@@ -157,5 +157,25 @@ describe('AppController (e2e)', () => {
         return getUserRequest().withBearerToken('$S{at}').expectStatus(200);
       });
     });
+
+    describe('POST /auth/refresh', () => {
+      const refreshRequest = () => spec().post('/auth/refresh');
+
+      it('should throw an error if refresh token not provided as authorization bearer', () => {
+        return refreshRequest().expectStatus(401);
+      });
+
+      it('should throw an error if access token is provided instead of refresh token as authorization bearer', () => {
+        return refreshRequest().withBearerToken('$S{at}').expectStatus(401);
+      });
+
+      it('should refresh the token', () => {
+        return refreshRequest()
+          .withBearerToken('$S{rt}')
+          .expectStatus(201)
+          .stores('at', 'access_token')
+          .stores('rt', 'refresh_token');
+      });
+    });
   });
 });
