@@ -145,5 +145,17 @@ describe('AppController (e2e)', () => {
           .stores('rt', 'refresh_token');
       });
     });
+
+    describe('GET /auth/user', () => {
+      const getUserRequest = () => spec().get('/auth/user');
+
+      it('should throw an error if access token not provided as authorization bearer', () => {
+        return getUserRequest().expectStatus(401);
+      });
+
+      it('should get user details', () => {
+        return getUserRequest().withBearerToken('$S{at}').expectStatus(200);
+      });
+    });
   });
 });
