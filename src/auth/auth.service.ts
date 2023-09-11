@@ -74,6 +74,27 @@ export class AuthService {
     return tokens;
   }
 
+  public async refreshTokens(userId: string, rt: string): Promise<Tokens> {
+    const user = await this.userRepo.findOne({
+      _id: new Types.ObjectId(userId),
+    });
+
+    if (!user || !user.rtHash) throw new ForbiddenException('Access denied');
+
+    const isRtMatch = await argon.verify(user.rtHash, rt);
+
+    if (!isRtMatch) throw new ForbiddenException('Access denied');
+
+    const payload: JwtPayload = {
+      sub: user._id.toHexString(),
+      email: user.email,
+    };
+
+    const tokens = await this.generateTokens(payload);
+    await this.updateRtHash(user._id, tokens.refresh_token);
+    return tokens;
+  }
+
   public async findUserById(userId: string): Promise<User> {
     return await this.userRepo.findOne({ _id: new Types.ObjectId(userId) });
   }
