@@ -6,6 +6,7 @@ import * as argon from 'argon2';
 import { CreateUserDto, SigninDto } from './dto';
 import { UserRepository } from './repositories';
 import { Types } from 'mongoose';
+import { User } from './schemas';
 
 @Injectable()
 export class AuthService {
@@ -71,6 +72,10 @@ export class AuthService {
     const tokens = await this.generateTokens(payload);
     await this.updateRtHash(user._id, tokens.refresh_token);
     return tokens;
+  }
+
+  public async findUserById(userId: string): Promise<User> {
+    return await this.userRepo.findOne({ _id: new Types.ObjectId(userId) });
   }
 
   private hashData(data: string): Promise<string> {
