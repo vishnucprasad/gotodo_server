@@ -322,5 +322,19 @@ describe('AppController (e2e)', () => {
           .expectBodyContains(createCategoryDto.color);
       });
     });
+
+    describe('GET /category/all', () => {
+      const getCategoriesRequest = () => spec().get('/category/all');
+
+      it('should throw an error if access token not provided as authorization bearer', () => {
+        return getCategoriesRequest().expectStatus(401);
+      });
+
+      it('should get all categories', () => {
+        return getCategoriesRequest()
+          .withBearerToken('$S{at}')
+          .expectStatus(200);
+      });
+    });
   });
 });
