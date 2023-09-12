@@ -8,6 +8,12 @@ import { Types } from 'mongoose';
 export class CategoryService {
   constructor(private readonly categoryRepo: CategoryRepository) {}
 
+  public async getCategories(userId: string): Promise<Category[]> {
+    return await this.categoryRepo.find({
+      userId: new Types.ObjectId(userId),
+    });
+  }
+
   public async createCategory(
     userId: string,
     dto: CreateCategoryDto,
