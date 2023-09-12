@@ -5,7 +5,7 @@ import mongoose, { Connection, Model } from 'mongoose';
 import { request, spec } from 'pactum';
 import { AppModule } from '../src/app.module';
 import { User } from '../src/auth/schemas';
-import { CreateUserDto, SigninDto } from '../src/auth/dto/';
+import { CreateUserDto, EditUserDto, SigninDto } from '../src/auth/dto/';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
@@ -175,6 +175,24 @@ describe('AppController (e2e)', () => {
           .expectStatus(201)
           .stores('at', 'access_token')
           .stores('rt', 'refresh_token');
+      });
+    });
+
+    describe('PATCH /auth/user/edit', () => {
+      const editUserRequest = () => spec().patch('/auth/user/edit');
+      const editUserDto: EditUserDto = {
+        name: 'John Smith',
+      };
+
+      it('should throw an error if access token not provided as authorization bearer', () => {
+        return editUserRequest().withBody(editUserDto).expectStatus(401);
+      });
+
+      it('should edit user', () => {
+        return editUserRequest()
+          .withBearerToken('$S{at}')
+          .withBody(editUserDto)
+          .expectStatus(200);
       });
     });
 
