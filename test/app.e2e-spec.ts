@@ -11,6 +11,8 @@ import {
   EditUserDto,
   SigninDto,
 } from '../src/auth/dto/';
+import { Category } from '../src/category/schemas';
+import { CreateCategoryDto } from '../src/category/dto';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
@@ -26,8 +28,12 @@ describe('AppController (e2e)', () => {
     const userModel: Model<User> = moduleFixture.get<Model<User>>(
       getModelToken(User.name),
     );
+    const categoryModel: Model<Category> = moduleFixture.get<Model<Category>>(
+      getModelToken(Category.name),
+    );
 
     await userModel.deleteMany({});
+    await categoryModel.deleteMany({});
 
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(
@@ -255,6 +261,65 @@ describe('AppController (e2e)', () => {
 
       it('should signout the user', () => {
         return signoutRequest().withBearerToken('$S{at}').expectStatus(204);
+      });
+    });
+  });
+
+  describe('CATEGORY /category', () => {
+    describe('POST /category/create', () => {
+      const createCategoryRequest = () => spec().post('/category/create');
+      const createCategoryDto: CreateCategoryDto = {
+        name: 'Work',
+        color: '#ffffff',
+      };
+
+      it('should throw an error if access token not provided as authorization bearer', () => {
+        return createCategoryRequest()
+          .withBody(createCategoryDto)
+          .expectStatus(401);
+      });
+
+      it('should throw an error if name is not provided in the body', () => {
+        const dto: Omit<CreateCategoryDto, 'color'> = {
+          name: createCategoryDto.name,
+        };
+
+        return createCategoryRequest()
+          .withBearerToken('$S{at}')
+          .withBody(dto)
+          .expectStatus(400);
+      });
+
+      it('should throw an error if color is not provided in the body', () => {
+        const dto: Omit<CreateCategoryDto, 'name'> = {
+          color: createCategoryDto.color,
+        };
+
+        return createCategoryRequest()
+          .withBearerToken('$S{at}')
+          .withBody(dto)
+          .expectStatus(400);
+      });
+
+      it('should throw an error if length of color string provided in the body is short', () => {
+        const dto: CreateCategoryDto = {
+          name: createCategoryDto.name,
+          color: '#fff',
+        };
+
+        return createCategoryRequest()
+          .withBearerToken('$S{at}')
+          .withBody(dto)
+          .expectStatus(400);
+      });
+
+      it('should create a new category', () => {
+        return createCategoryRequest()
+          .withBearerToken('$S{at}')
+          .withBody(createCategoryDto)
+          .expectStatus(201)
+          .expectBodyContains(createCategoryDto.name)
+          .expectBodyContains(createCategoryDto.color);
       });
     });
   });
