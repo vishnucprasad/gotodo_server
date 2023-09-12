@@ -407,5 +407,29 @@ describe('AppController (e2e)', () => {
           .expectBodyContains(editCategoryDto.name);
       });
     });
+
+    describe('DELETE /category/:id', () => {
+      const deleteCategoryRequest = () => spec().delete('/category/{id}');
+
+      it('should throw an error if access token not provided as authorization bearer', () => {
+        return deleteCategoryRequest()
+          .withPathParams({ id: '$S{categoryId}' })
+          .expectStatus(401);
+      });
+
+      it('should throw an error if provided category id is invalid', () => {
+        return deleteCategoryRequest()
+          .withPathParams({ id: '$S{userId}' })
+          .withBearerToken('$S{at}')
+          .expectStatus(404);
+      });
+
+      it('should delete category', () => {
+        return deleteCategoryRequest()
+          .withPathParams({ id: '$S{categoryId}' })
+          .withBearerToken('$S{at}')
+          .expectStatus(204);
+      });
+    });
   });
 });
