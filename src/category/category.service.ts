@@ -77,4 +77,14 @@ export class CategoryService {
       await session.endSession();
     }
   }
+
+  public async deleteCategory(
+    userId: string,
+    categoryId: string,
+  ): Promise<void> {
+    await this.categoryRepo.findOneAndDelete({
+      _id: new Types.ObjectId(categoryId),
+      userId: new Types.ObjectId(userId),
+    });
+  }
 }

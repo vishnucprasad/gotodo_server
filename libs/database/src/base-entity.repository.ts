@@ -19,7 +19,7 @@ export abstract class BaseEntityRepository<TEntity extends BaseEntity> {
     protected readonly connection: Connection,
   ) {}
 
-  async create(
+  public async create(
     document: Omit<TEntity, '_id'>,
     options?: SaveOptions,
   ): Promise<TEntity> {
@@ -30,12 +30,12 @@ export abstract class BaseEntityRepository<TEntity extends BaseEntity> {
     return (await createdDocument.save(options)) as TEntity;
   }
 
-  async findOne(filterQuery: FilterQuery<TEntity>): Promise<TEntity> {
+  public async findOne(filterQuery: FilterQuery<TEntity>): Promise<TEntity> {
     const document = await this.model.findOne(filterQuery, {}, { lean: true });
     return document as TEntity;
   }
 
-  async findOneAndUpdate(
+  public async findOneAndUpdate(
     filterQuery: FilterQuery<TEntity>,
     update: UpdateQuery<TEntity>,
     options?: QueryOptions<TEntity>,
@@ -54,7 +54,10 @@ export abstract class BaseEntityRepository<TEntity extends BaseEntity> {
     return document;
   }
 
-  async upsert(filterQuery: FilterQuery<TEntity>, document: Partial<TEntity>) {
+  public async upsert(
+    filterQuery: FilterQuery<TEntity>,
+    document: Partial<TEntity>,
+  ) {
     return this.model.findOneAndUpdate(filterQuery, document, {
       lean: true,
       upsert: true,
@@ -62,11 +65,24 @@ export abstract class BaseEntityRepository<TEntity extends BaseEntity> {
     });
   }
 
-  async find(filterQuery: FilterQuery<TEntity>) {
+  public async findOneAndDelete(filterQuery: FilterQuery<TEntity>) {
+    const document = await this.model.findOneAndDelete(filterQuery, {
+      lean: true,
+    });
+
+    if (!document) {
+      this.logger.warn(`Document not found with filterQuery:`, filterQuery);
+      throw new NotFoundException('Document not found.');
+    }
+
+    return document;
+  }
+
+  public async find(filterQuery: FilterQuery<TEntity>) {
     return this.model.find(filterQuery, {}, { lean: true });
   }
 
-  async startTransaction(): Promise<ClientSession> {
+  public async startTransaction(): Promise<ClientSession> {
     const session = await this.connection.startSession();
     session.startTransaction();
     return session;
