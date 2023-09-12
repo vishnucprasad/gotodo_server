@@ -6,20 +6,20 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Patch,
   Post,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AtGuard, CurrentUser, Public, Tokens } from '@app/common';
-import { CreateUserDto, SigninDto, UserDto } from './dto';
+import { CreateUserDto, EditUserDto, SigninDto, UserDto } from './dto';
 import { RtGuard } from './guards';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @UseGuards(AtGuard)
   @UseInterceptors(ClassSerializerInterceptor)
   @Get('user')
   public getCurrentUser(@CurrentUser() user: UserDto): UserDto {
@@ -47,6 +47,15 @@ export class AuthController {
     @CurrentUser('rt') rt: string,
   ): Promise<Tokens> {
     return this.authService.refreshTokens(userId, rt);
+  }
+
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Patch('user/edit')
+  public editUser(
+    @CurrentUser('_id') userId: string,
+    @Body() dto: EditUserDto,
+  ): Promise<UserDto> {
+    return this.authService.editUser(userId, dto);
   }
 
   @HttpCode(HttpStatus.NO_CONTENT)

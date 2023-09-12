@@ -3,7 +3,7 @@ import { ForbiddenException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as argon from 'argon2';
-import { CreateUserDto, SigninDto } from './dto';
+import { CreateUserDto, EditUserDto, SigninDto, UserDto } from './dto';
 import { UserRepository } from './repositories';
 import { Types } from 'mongoose';
 import { User } from './schemas';
@@ -95,6 +95,25 @@ export class AuthService {
     const tokens = await this.generateTokens(payload);
     await this.updateRtHash(user._id, tokens.refresh_token);
     return tokens;
+  }
+
+  public async editUser(userId: string, dto: EditUserDto): Promise<UserDto> {
+    const session = await this.userRepo.startTransaction();
+
+    try {
+      const user = await this.userRepo.findOneAndUpdate(
+        { _id: new Types.ObjectId(userId) },
+        { ...dto },
+        { session, new: true, lean: true },
+      );
+      await session.commitTransaction();
+      return new UserDto(user as unknown as UserDto);
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      await session.endSession();
+    }
   }
 
   public async signout(userId: string): Promise<void> {
