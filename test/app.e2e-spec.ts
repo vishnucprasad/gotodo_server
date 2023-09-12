@@ -5,7 +5,12 @@ import mongoose, { Connection, Model } from 'mongoose';
 import { request, spec } from 'pactum';
 import { AppModule } from '../src/app.module';
 import { User } from '../src/auth/schemas';
-import { CreateUserDto, EditUserDto, SigninDto } from '../src/auth/dto/';
+import {
+  ChangePasswordDto,
+  CreateUserDto,
+  EditUserDto,
+  SigninDto,
+} from '../src/auth/dto/';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
@@ -193,6 +198,51 @@ describe('AppController (e2e)', () => {
           .withBearerToken('$S{at}')
           .withBody(editUserDto)
           .expectStatus(200);
+      });
+    });
+
+    describe('PATCH /auth/user/password', () => {
+      const changePasswordRequest = () => spec().patch('/auth/user/password');
+      const changePasswordDto: ChangePasswordDto = {
+        currentPassword: 'Johndoe@123',
+        newPassword: 'John@123',
+      };
+
+      it('should throw an error if access token not provided as authorization bearer', () => {
+        return changePasswordRequest()
+          .withBody(changePasswordDto)
+          .expectStatus(401);
+      });
+
+      it('should throw an error if currentPassword is not provided in the body', () => {
+        const dto: Omit<ChangePasswordDto, 'currentPassword'> = {
+          newPassword: changePasswordDto.newPassword,
+        };
+
+        return changePasswordRequest()
+          .withBearerToken('$S{at}')
+          .withBody(dto)
+          .expectStatus(400);
+      });
+
+      it('should throw an error if newPassword is not provided in the body', () => {
+        const dto: Omit<ChangePasswordDto, 'newPassword'> = {
+          currentPassword: changePasswordDto.currentPassword,
+        };
+
+        return changePasswordRequest()
+          .withBearerToken('$S{at}')
+          .withBody(dto)
+          .expectStatus(400);
+      });
+
+      it('should change password', () => {
+        return changePasswordRequest()
+          .withBearerToken('$S{at}')
+          .withBody(changePasswordDto)
+          .expectStatus(200)
+          .expectBodyContains(changePasswordDto.currentPassword)
+          .expectBodyContains(changePasswordDto.newPassword);
       });
     });
 
