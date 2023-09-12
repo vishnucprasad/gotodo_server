@@ -165,7 +165,10 @@ describe('AppController (e2e)', () => {
       });
 
       it('should get user details', () => {
-        return getUserRequest().withBearerToken('$S{at}').expectStatus(200);
+        return getUserRequest()
+          .withBearerToken('$S{at}')
+          .expectStatus(200)
+          .stores('userId', '_id');
       });
     });
 
@@ -319,7 +322,8 @@ describe('AppController (e2e)', () => {
           .withBody(createCategoryDto)
           .expectStatus(201)
           .expectBodyContains(createCategoryDto.name)
-          .expectBodyContains(createCategoryDto.color);
+          .expectBodyContains(createCategoryDto.color)
+          .stores('categoryId', '_id');
       });
     });
 
@@ -332,6 +336,30 @@ describe('AppController (e2e)', () => {
 
       it('should get all categories', () => {
         return getCategoriesRequest()
+          .withBearerToken('$S{at}')
+          .expectStatus(200);
+      });
+    });
+
+    describe('GET /category/:id', () => {
+      const getCategoryRequest = () => spec().get('/category/{id}');
+
+      it('should throw an error if access token not provided as authorization bearer', () => {
+        return getCategoryRequest()
+          .withPathParams({ id: '$S{categoryId}' })
+          .expectStatus(401);
+      });
+
+      it('should throw an error if provided category id is invalid', () => {
+        return getCategoryRequest()
+          .withPathParams({ id: '$S{userId}' })
+          .withBearerToken('$S{at}')
+          .expectStatus(404);
+      });
+
+      it('should get category', () => {
+        return getCategoryRequest()
+          .withPathParams({ id: '$S{categoryId}' })
           .withBearerToken('$S{at}')
           .expectStatus(200);
       });
