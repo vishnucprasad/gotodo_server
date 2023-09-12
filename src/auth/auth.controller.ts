@@ -12,8 +12,14 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { AtGuard, CurrentUser, Public, Tokens } from '@app/common';
-import { CreateUserDto, EditUserDto, SigninDto, UserDto } from './dto';
+import { CurrentUser, Public, Tokens } from '@app/common';
+import {
+  ChangePasswordDto,
+  CreateUserDto,
+  EditUserDto,
+  SigninDto,
+  UserDto,
+} from './dto';
 import { RtGuard } from './guards';
 
 @Controller('auth')
@@ -56,6 +62,14 @@ export class AuthController {
     @Body() dto: EditUserDto,
   ): Promise<UserDto> {
     return this.authService.editUser(userId, dto);
+  }
+
+  @Patch('user/password')
+  public changePassword(
+    @CurrentUser('_id') userId: string,
+    @Body() dto: ChangePasswordDto,
+  ): Promise<ChangePasswordDto> {
+    return this.authService.changePassword(userId, dto);
   }
 
   @HttpCode(HttpStatus.NO_CONTENT)

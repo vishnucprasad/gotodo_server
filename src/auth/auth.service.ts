@@ -3,7 +3,13 @@ import { ForbiddenException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as argon from 'argon2';
-import { CreateUserDto, EditUserDto, SigninDto, UserDto } from './dto';
+import {
+  ChangePasswordDto,
+  CreateUserDto,
+  EditUserDto,
+  SigninDto,
+  UserDto,
+} from './dto';
 import { UserRepository } from './repositories';
 import { Types } from 'mongoose';
 import { User } from './schemas';
@@ -108,6 +114,40 @@ export class AuthService {
       );
       await session.commitTransaction();
       return new UserDto(user as unknown as UserDto);
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      await session.endSession();
+    }
+  }
+
+  public async changePassword(
+    userId: string,
+    dto: ChangePasswordDto,
+  ): Promise<ChangePasswordDto> {
+    const user = await this.userRepo.findOne({
+      _id: new Types.ObjectId(userId),
+    });
+
+    if (!user) throw new ForbiddenException('Access denied');
+
+    const isPasswordMatch = argon.verify(user.hash, dto.currentPassword);
+
+    if (!isPasswordMatch)
+      throw new ForbiddenException('Access denied: Invalid password');
+
+    const session = await this.userRepo.startTransaction();
+
+    try {
+      const hash = await this.hashData(dto.newPassword);
+      await this.userRepo.findOneAndUpdate(
+        { _id: new Types.ObjectId(userId) },
+        { hash },
+        { session },
+      );
+      await session.commitTransaction();
+      return dto;
     } catch (error) {
       await session.abortTransaction();
       throw error;
