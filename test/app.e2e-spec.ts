@@ -12,7 +12,7 @@ import {
   SigninDto,
 } from '../src/auth/dto/';
 import { Category } from '../src/category/schemas';
-import { CreateCategoryDto } from '../src/category/dto';
+import { CreateCategoryDto, EditCategoryDto } from '../src/category/dto';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
@@ -362,6 +362,49 @@ describe('AppController (e2e)', () => {
           .withPathParams({ id: '$S{categoryId}' })
           .withBearerToken('$S{at}')
           .expectStatus(200);
+      });
+    });
+
+    describe('PATCH /category/:id', () => {
+      const editCategoryRequest = () => spec().patch('/category/{id}');
+      const editCategoryDto: EditCategoryDto = {
+        name: 'Personal',
+      };
+
+      it('should throw an error if access token not provided as authorization bearer', () => {
+        return editCategoryRequest()
+          .withPathParams({ id: '$S{categoryId}' })
+          .withBody(editCategoryDto)
+          .expectStatus(401);
+      });
+
+      it('should throw an error if provided category id is invalid', () => {
+        return editCategoryRequest()
+          .withPathParams({ id: '$S{userId}' })
+          .withBearerToken('$S{at}')
+          .withBody(editCategoryDto)
+          .expectStatus(404);
+      });
+
+      it('should throw an error if length of color string provided in the body is short', () => {
+        const dto: EditCategoryDto = {
+          color: '#fff',
+        };
+
+        return editCategoryRequest()
+          .withPathParams({ id: '$S{categoryId}' })
+          .withBearerToken('$S{at}')
+          .withBody(dto)
+          .expectStatus(400);
+      });
+
+      it('should edit category', () => {
+        return editCategoryRequest()
+          .withPathParams({ id: '$S{categoryId}' })
+          .withBearerToken('$S{at}')
+          .withBody(editCategoryDto)
+          .expectStatus(200)
+          .expectBodyContains(editCategoryDto.name);
       });
     });
   });
