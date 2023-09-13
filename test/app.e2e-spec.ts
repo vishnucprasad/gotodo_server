@@ -15,7 +15,8 @@ import { Category } from '../src/category/schemas';
 import { CreateCategoryDto, EditCategoryDto } from '../src/category/dto';
 import { CreateTodoDto } from 'src/todo/dto/create-todo.dto';
 import { Todo } from '../src/todo/schemas';
-import { EditTodoDto } from '../src/todo/dto';
+import { ChangeStatusDto, EditTodoDto } from '../src/todo/dto';
+import { TodoStatus } from '../src/todo/types';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
@@ -545,7 +546,7 @@ describe('AppController (e2e)', () => {
           .expectStatus(404);
       });
 
-      it('should get category', () => {
+      it('should get todo', () => {
         return getTodoRequest()
           .withPathParams({ id: '$S{todoId}' })
           .withBearerToken('$S{at}')
@@ -574,13 +575,56 @@ describe('AppController (e2e)', () => {
           .expectStatus(404);
       });
 
-      it('should edit category', () => {
+      it('should edit todo', () => {
         return editTodoRequest()
           .withPathParams({ id: '$S{todoId}' })
           .withBearerToken('$S{at}')
           .withBody(editTodoDto)
           .expectStatus(200)
           .expectBodyContains(editTodoDto.date);
+      });
+    });
+
+    describe('PATCH /todo/status/:id', () => {
+      const changeStatusRequest = () => spec().patch('/todo/status/{id}');
+      const changeStatusDto: ChangeStatusDto = {
+        status: TodoStatus.InProgress,
+      };
+
+      it('should throw an error if access token not provided as authorization bearer', () => {
+        return changeStatusRequest()
+          .withPathParams({ id: '$S{todoId}' })
+          .withBody(changeStatusDto)
+          .expectStatus(401);
+      });
+
+      it('should throw an error if provided todo id is invalid', () => {
+        return changeStatusRequest()
+          .withPathParams({ id: '$S{userId}' })
+          .withBearerToken('$S{at}')
+          .withBody(changeStatusDto)
+          .expectStatus(404);
+      });
+
+      it('should throw an error if provided todo status is invalid', () => {
+        const dto = {
+          status: 'test-status',
+        };
+
+        return changeStatusRequest()
+          .withPathParams({ id: '$S{todoId}' })
+          .withBearerToken('$S{at}')
+          .withBody(dto)
+          .expectStatus(400);
+      });
+
+      it('should change todo status', () => {
+        return changeStatusRequest()
+          .withPathParams({ id: '$S{todoId}' })
+          .withBearerToken('$S{at}')
+          .withBody(changeStatusDto)
+          .expectStatus(200)
+          .expectBodyContains(changeStatusDto.status);
       });
     });
   });
