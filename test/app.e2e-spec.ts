@@ -13,6 +13,8 @@ import {
 } from '../src/auth/dto/';
 import { Category } from '../src/category/schemas';
 import { CreateCategoryDto, EditCategoryDto } from '../src/category/dto';
+import { CreateTodoDto } from 'src/todo/dto/create-todo.dto';
+import { Todo } from '../src/todo/schemas';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
@@ -31,9 +33,13 @@ describe('AppController (e2e)', () => {
     const categoryModel: Model<Category> = moduleFixture.get<Model<Category>>(
       getModelToken(Category.name),
     );
+    const todoModel: Model<Todo> = moduleFixture.get<Model<Todo>>(
+      getModelToken(Todo.name),
+    );
 
     await userModel.deleteMany({});
     await categoryModel.deleteMany({});
+    await todoModel.deleteMany({});
 
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(
@@ -325,6 +331,16 @@ describe('AppController (e2e)', () => {
           .expectBodyContains(createCategoryDto.color)
           .stores('categoryId', '_id');
       });
+
+      it('should create another category for further tests', () => {
+        return createCategoryRequest()
+          .withBearerToken('$S{at}')
+          .withBody(createCategoryDto)
+          .expectStatus(201)
+          .expectBodyContains(createCategoryDto.name)
+          .expectBodyContains(createCategoryDto.color)
+          .stores('secondCategoryId', '_id');
+      });
     });
 
     describe('GET /category/all', () => {
@@ -413,7 +429,7 @@ describe('AppController (e2e)', () => {
 
       it('should throw an error if access token not provided as authorization bearer', () => {
         return deleteCategoryRequest()
-          .withPathParams({ id: '$S{categoryId}' })
+          .withPathParams({ id: '$S{secondCategoryId}' })
           .expectStatus(401);
       });
 
@@ -426,9 +442,77 @@ describe('AppController (e2e)', () => {
 
       it('should delete category', () => {
         return deleteCategoryRequest()
-          .withPathParams({ id: '$S{categoryId}' })
+          .withPathParams({ id: '$S{secondCategoryId}' })
           .withBearerToken('$S{at}')
           .expectStatus(204);
+      });
+    });
+  });
+
+  describe('TODO /todo', () => {
+    describe('POST /todo/create', () => {
+      const createTodoRequest = () => spec().post('/todo/create');
+      const createTodoDto: CreateTodoDto = {
+        categoryId: '$S{categoryId}',
+        task: 'Do auth API integration for chateo app',
+        date: new Date('2023-09-07T04:43:38.558Z'),
+        description:
+          'Integrate a secure Authentication API into the Chateo App to enable user registration, login, and data protection, ensuring a seamless and secure user experience',
+      };
+
+      it('should throw an error if access token not provided as authorization bearer', () => {
+        return createTodoRequest().withBody(createTodoDto).expectStatus(401);
+      });
+
+      it('should throw an error if category id is not provided in the body', () => {
+        const dto: Omit<CreateTodoDto, 'categoryId'> = {
+          task: createTodoDto.task,
+          date: createTodoDto.date,
+          description: createTodoDto.description,
+        };
+
+        return createTodoRequest()
+          .withBearerToken('$S{at}')
+          .withBody(dto)
+          .expectStatus(400);
+      });
+
+      it('should throw an error if task is not provided in the body', () => {
+        const dto: Omit<CreateTodoDto, 'task'> = {
+          categoryId: createTodoDto.categoryId,
+          date: createTodoDto.date,
+          description: createTodoDto.description,
+        };
+
+        return createTodoRequest()
+          .withBearerToken('$S{at}')
+          .withBody(dto)
+          .expectStatus(400);
+      });
+
+      it('should throw an error if date is not provided in the body', () => {
+        const dto: Omit<CreateTodoDto, 'date'> = {
+          categoryId: createTodoDto.categoryId,
+          task: createTodoDto.task,
+          description: createTodoDto.description,
+        };
+
+        return createTodoRequest()
+          .withBearerToken('$S{at}')
+          .withBody(dto)
+          .expectStatus(400);
+      });
+
+      it('should create a new todo', () => {
+        return createTodoRequest()
+          .withBearerToken('$S{at}')
+          .withBody(createTodoDto)
+          .expectStatus(201)
+          .expectBodyContains(createTodoDto.categoryId)
+          .expectBodyContains(createTodoDto.task)
+          .expectBodyContains(createTodoDto.date)
+          .expectBodyContains(createTodoDto.description)
+          .stores('todoId', '_id');
       });
     });
   });

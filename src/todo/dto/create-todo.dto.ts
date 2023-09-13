@@ -20,5 +20,5 @@ export class CreateTodoDto {
 
   @IsString()
   @IsOptional()
-  description: string;
+  description?: string;
 }
