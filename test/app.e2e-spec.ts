@@ -15,6 +15,7 @@ import { Category } from '../src/category/schemas';
 import { CreateCategoryDto, EditCategoryDto } from '../src/category/dto';
 import { CreateTodoDto } from 'src/todo/dto/create-todo.dto';
 import { Todo } from '../src/todo/schemas';
+import { EditTodoDto } from '../src/todo/dto';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
@@ -549,6 +550,37 @@ describe('AppController (e2e)', () => {
           .withPathParams({ id: '$S{todoId}' })
           .withBearerToken('$S{at}')
           .expectStatus(200);
+      });
+    });
+
+    describe('PATCH /todo/:id', () => {
+      const editTodoRequest = () => spec().patch('/todo/{id}');
+      const editTodoDto: EditTodoDto = {
+        date: new Date('2023-09-13T05:47:14.554+00:00'),
+      };
+
+      it('should throw an error if access token not provided as authorization bearer', () => {
+        return editTodoRequest()
+          .withPathParams({ id: '$S{todoId}' })
+          .withBody(editTodoDto)
+          .expectStatus(401);
+      });
+
+      it('should throw an error if provided todo id is invalid', () => {
+        return editTodoRequest()
+          .withPathParams({ id: '$S{userId}' })
+          .withBearerToken('$S{at}')
+          .withBody(editTodoDto)
+          .expectStatus(404);
+      });
+
+      it('should edit category', () => {
+        return editTodoRequest()
+          .withPathParams({ id: '$S{todoId}' })
+          .withBearerToken('$S{at}')
+          .withBody(editTodoDto)
+          .expectStatus(200)
+          .expectBodyContains(editTodoDto.date);
       });
     });
   });
