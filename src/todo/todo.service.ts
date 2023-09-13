@@ -3,7 +3,7 @@ import { Todo } from './schemas';
 import { CreateTodoDto } from './dto/create-todo.dto';
 import { TodoRepository } from './repositories';
 import { Types } from 'mongoose';
-import { CategorySchema } from 'src/category/schemas';
+import { CategorySchema } from '../category/schemas';
 
 @Injectable()
 export class TodoService {

@@ -515,5 +515,17 @@ describe('AppController (e2e)', () => {
           .stores('todoId', '_id');
       });
     });
+
+    describe('GET /todo/all', () => {
+      const getTodoRequest = () => spec().get('/todo/all');
+
+      it('should throw an error if access token not provided as authorization bearer', () => {
+        return getTodoRequest().expectStatus(401);
+      });
+
+      it('should get all todos', () => {
+        return getTodoRequest().withBearerToken('$S{at}').expectStatus(200);
+      });
+    });
   });
 });
