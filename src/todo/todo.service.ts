@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Todo } from './schemas';
 import { CreateTodoDto } from './dto/create-todo.dto';
 import { TodoRepository } from './repositories';
@@ -30,6 +30,33 @@ export class TodoService {
         },
       },
     ]);
+  }
+
+  public async getTodoById(userId: string, todoId: string): Promise<Todo> {
+    const todo = await this.todoRepo.aggregate([
+      {
+        $match: {
+          _id: new Types.ObjectId(todoId),
+          userId: new Types.ObjectId(userId),
+        },
+      },
+      {
+        $lookup: {
+          from: CategorySchema.get('collection'),
+          foreignField: '_id',
+          localField: 'categoryId',
+          as: 'category',
+        },
+      },
+      {
+        $set: {
+          category: { $first: '$category' },
+        },
+      },
+    ]);
+
+    if (!todo[0]) throw new NotFoundException('Todo not found');
+    return todo[0];
   }
 
   public async createTodo(userId: string, dto: CreateTodoDto): Promise<Todo> {
