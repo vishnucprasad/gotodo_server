@@ -1,10 +1,12 @@
 import { Logger, NotFoundException } from '@nestjs/common';
 import { BaseEntity } from './base-entity.schema';
 import {
+  AggregateOptions,
   ClientSession,
   Connection,
   FilterQuery,
   Model,
+  PipelineStage,
   QueryOptions,
   SaveOptions,
   Types,
@@ -80,6 +82,13 @@ export abstract class BaseEntityRepository<TEntity extends BaseEntity> {
 
   public async find(filterQuery: FilterQuery<TEntity>) {
     return this.model.find(filterQuery, {}, { lean: true });
+  }
+
+  public async aggregate(
+    pipeline: PipelineStage[],
+    options?: AggregateOptions,
+  ) {
+    return this.model.aggregate<TEntity>(pipeline, options);
   }
 
   public async startTransaction(): Promise<ClientSession> {
