@@ -128,4 +128,11 @@ export class TodoService {
       await session.endSession();
     }
   }
+
+  public async deleteTodo(userId: string, todoId: string): Promise<void> {
+    await this.todoRepo.findOneAndDelete({
+      _id: new Types.ObjectId(todoId),
+      userId: new Types.ObjectId(userId),
+    });
+  }
 }
