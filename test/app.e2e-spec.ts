@@ -627,5 +627,29 @@ describe('AppController (e2e)', () => {
           .expectBodyContains(changeStatusDto.status);
       });
     });
+
+    describe('DELETE /todo/:id', () => {
+      const deleteTodoRequest = () => spec().delete('/todo/{id}');
+
+      it('should throw an error if access token not provided as authorization bearer', () => {
+        return deleteTodoRequest()
+          .withPathParams({ id: '$S{todoId}' })
+          .expectStatus(401);
+      });
+
+      it('should throw an error if provided todo id is invalid', () => {
+        return deleteTodoRequest()
+          .withPathParams({ id: '$S{userId}' })
+          .withBearerToken('$S{at}')
+          .expectStatus(404);
+      });
+
+      it('should delete todo', () => {
+        return deleteTodoRequest()
+          .withPathParams({ id: '$S{todoId}' })
+          .withBearerToken('$S{at}')
+          .expectStatus(204);
+      });
+    });
   });
 });
