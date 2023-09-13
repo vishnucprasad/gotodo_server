@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import { TodoService } from './todo.service';
-import { CreateTodoDto, EditTodoDto } from './dto';
+import { ChangeStatusDto, CreateTodoDto, EditTodoDto } from './dto';
 import { Todo } from './schemas';
 import { CurrentUser } from '@app/common';
 
@@ -36,5 +36,14 @@ export class TodoController {
     @Body() dto: EditTodoDto,
   ): Promise<Todo> {
     return this.todoService.editTodo(userId, todoId, dto);
+  }
+
+  @Patch('status/:id')
+  public changeStatus(
+    @CurrentUser('_id') userId: string,
+    @Param('id') todoId: string,
+    @Body() dto: ChangeStatusDto,
+  ) {
+    return this.todoService.changeStatus(userId, todoId, dto);
   }
 }

@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Todo } from './schemas';
-import { CreateTodoDto, EditTodoDto } from './dto';
+import { ChangeStatusDto, CreateTodoDto, EditTodoDto } from './dto';
 import { TodoRepository } from './repositories';
 import { Types } from 'mongoose';
 import { CategorySchema } from '../category/schemas';
@@ -94,6 +94,29 @@ export class TodoService {
       const todo = await this.todoRepo.findOneAndUpdate(
         { _id: new Types.ObjectId(todoId), userId: new Types.ObjectId(userId) },
         { ...dto },
+        { session, new: true, lean: true },
+      );
+      await session.commitTransaction();
+      return todo;
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      await session.endSession();
+    }
+  }
+
+  public async changeStatus(
+    userId: string,
+    todoId: string,
+    dto: ChangeStatusDto,
+  ): Promise<Todo> {
+    const session = await this.todoRepo.startTransaction();
+
+    try {
+      const todo = await this.todoRepo.findOneAndUpdate(
+        { _id: new Types.ObjectId(todoId), userId: new Types.ObjectId(userId) },
+        { status: dto.status },
         { session, new: true, lean: true },
       );
       await session.commitTransaction();
