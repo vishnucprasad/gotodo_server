@@ -527,5 +527,29 @@ describe('AppController (e2e)', () => {
         return getTodoRequest().withBearerToken('$S{at}').expectStatus(200);
       });
     });
+
+    describe('GET /todo/:id', () => {
+      const getTodoRequest = () => spec().get('/todo/{id}');
+
+      it('should throw an error if access token not provided as authorization bearer', () => {
+        return getTodoRequest()
+          .withPathParams({ id: '$S{todoId}' })
+          .expectStatus(401);
+      });
+
+      it('should throw an error if provided category id is invalid', () => {
+        return getTodoRequest()
+          .withPathParams({ id: '$S{userId}' })
+          .withBearerToken('$S{at}')
+          .expectStatus(404);
+      });
+
+      it('should get category', () => {
+        return getTodoRequest()
+          .withPathParams({ id: '$S{todoId}' })
+          .withBearerToken('$S{at}')
+          .expectStatus(200);
+      });
+    });
   });
 });
