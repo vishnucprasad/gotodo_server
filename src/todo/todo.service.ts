@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Todo } from './schemas';
-import { CreateTodoDto } from './dto/create-todo.dto';
+import { CreateTodoDto, EditTodoDto } from './dto';
 import { TodoRepository } from './repositories';
 import { Types } from 'mongoose';
 import { CategorySchema } from '../category/schemas';
@@ -72,6 +72,29 @@ export class TodoService {
           description: dto.description,
         },
         { session },
+      );
+      await session.commitTransaction();
+      return todo;
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      await session.endSession();
+    }
+  }
+
+  public async editTodo(
+    userId: string,
+    todoId: string,
+    dto: EditTodoDto,
+  ): Promise<Todo> {
+    const session = await this.todoRepo.startTransaction();
+
+    try {
+      const todo = await this.todoRepo.findOneAndUpdate(
+        { _id: new Types.ObjectId(todoId), userId: new Types.ObjectId(userId) },
+        { ...dto },
+        { session, new: true, lean: true },
       );
       await session.commitTransaction();
       return todo;
