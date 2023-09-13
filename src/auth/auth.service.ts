@@ -1,4 +1,3 @@
-import { JwtPayload, Tokens } from '@app/common';
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
@@ -13,6 +12,7 @@ import {
 import { UserRepository } from './repositories';
 import { Types } from 'mongoose';
 import { User } from './schemas';
+import { JwtPayload, Tokens } from './types';
 
 @Injectable()
 export class AuthService {

@@ -1,4 +1,4 @@
-export const enum Status {
+export const enum TodoStatus {
   Todo = 'todo',
   InProgress = 'inProgress',
   Completed = 'completed',

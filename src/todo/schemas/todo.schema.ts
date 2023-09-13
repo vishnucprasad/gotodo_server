@@ -1,7 +1,7 @@
-import { Status } from '@app/common';
 import { BaseEntity } from '@app/database';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Types } from 'mongoose';
+import { TodoStatus } from '../types';
 
 @Schema({ versionKey: false, timestamps: true, collection: 'todos' })
 export class Todo extends BaseEntity {
@@ -17,8 +17,8 @@ export class Todo extends BaseEntity {
   @Prop({ required: true })
   date: Date;
 
-  @Prop({ type: String, default: Status.Todo })
-  status?: Status;
+  @Prop({ type: String, default: TodoStatus.Todo })
+  status?: TodoStatus;
 
   @Prop()
   description: string;

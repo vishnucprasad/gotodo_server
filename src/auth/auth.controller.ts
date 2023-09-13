@@ -12,7 +12,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { CurrentUser, Public, Tokens } from '@app/common';
+import { CurrentUser, Public } from '@app/common';
 import {
   ChangePasswordDto,
   CreateUserDto,
@@ -21,6 +21,7 @@ import {
   UserDto,
 } from './dto';
 import { RtGuard } from './guards';
+import { Tokens } from './types';
 
 @Controller('auth')
 export class AuthController {
