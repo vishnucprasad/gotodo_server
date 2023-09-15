@@ -457,7 +457,7 @@ describe('AppController (e2e)', () => {
       const createTodoDto: CreateTodoDto = {
         categoryId: '$S{categoryId}',
         task: 'Do auth API integration for chateo app',
-        date: new Date('2023-09-07T04:43:38.558Z'),
+        date: new Date(),
         description:
           'Integrate a secure Authentication API into the Chateo App to enable user registration, login, and data protection, ensuring a seamless and secure user experience',
       };
@@ -519,14 +519,44 @@ describe('AppController (e2e)', () => {
     });
 
     describe('GET /todo/all', () => {
+      const from = new Date();
+      const to = new Date(new Date().setDate(from.getDate() + 1));
       const getTodoRequest = () => spec().get('/todo/all');
 
       it('should throw an error if access token not provided as authorization bearer', () => {
         return getTodoRequest().expectStatus(401);
       });
 
+      it('should throw an error if no query params provided in the request', () => {
+        return getTodoRequest().withBearerToken('$S{at}').expectStatus(400);
+      });
+
+      it('should throw an error if from date not provided as query params', () => {
+        return getTodoRequest()
+          .withBearerToken('$S{at}')
+          .withQueryParams({
+            to: to.toISOString(),
+          })
+          .expectStatus(400);
+      });
+
+      it('should throw an error if to date not provided as query params', () => {
+        return getTodoRequest()
+          .withBearerToken('$S{at}')
+          .withQueryParams({
+            from: from.toISOString(),
+          })
+          .expectStatus(400);
+      });
+
       it('should get all todos', () => {
-        return getTodoRequest().withBearerToken('$S{at}').expectStatus(200);
+        return getTodoRequest()
+          .withBearerToken('$S{at}')
+          .withQueryParams({
+            from: from.toISOString(),
+            to: to.toISOString(),
+          })
+          .expectStatus(200);
       });
     });
 
