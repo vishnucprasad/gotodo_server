@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Todo } from './schemas';
-import { ChangeStatusDto, CreateTodoDto, EditTodoDto } from './dto';
+import { ChangeStatusDto, CreateTodoDto, EditTodoDto, GetTodoDto } from './dto';
 import { TodoRepository } from './repositories';
 import { Types } from 'mongoose';
 import { CategorySchema } from '../category/schemas';
@@ -9,11 +9,15 @@ import { CategorySchema } from '../category/schemas';
 export class TodoService {
   constructor(private readonly todoRepo: TodoRepository) {}
 
-  public async getTodos(userId: string): Promise<Todo[]> {
+  public async getTodos(userId: string, dto: GetTodoDto): Promise<Todo[]> {
     return await this.todoRepo.aggregate([
       {
         $match: {
           userId: new Types.ObjectId(userId),
+          date: {
+            $gte: new Date(dto.from),
+            $lte: new Date(dto.to),
+          },
         },
       },
       {

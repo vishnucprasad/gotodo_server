@@ -8,9 +8,10 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { TodoService } from './todo.service';
-import { ChangeStatusDto, CreateTodoDto, EditTodoDto } from './dto';
+import { ChangeStatusDto, CreateTodoDto, EditTodoDto, GetTodoDto } from './dto';
 import { Todo } from './schemas';
 import { CurrentUser } from '@app/common';
 
@@ -19,8 +20,11 @@ export class TodoController {
   constructor(private readonly todoService: TodoService) {}
 
   @Get('all')
-  public getTodos(@CurrentUser('_id') userId: string): Promise<Todo[]> {
-    return this.todoService.getTodos(userId);
+  public getTodos(
+    @CurrentUser('_id') userId: string,
+    @Query() dto: GetTodoDto,
+  ): Promise<Todo[]> {
+    return this.todoService.getTodos(userId, dto);
   }
 
   @Get(':id')
