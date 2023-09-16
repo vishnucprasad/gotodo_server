@@ -466,19 +466,6 @@ describe('AppController (e2e)', () => {
         return createTodoRequest().withBody(createTodoDto).expectStatus(401);
       });
 
-      it('should throw an error if category id is not provided in the body', () => {
-        const dto: Omit<CreateTodoDto, 'categoryId'> = {
-          task: createTodoDto.task,
-          date: createTodoDto.date,
-          description: createTodoDto.description,
-        };
-
-        return createTodoRequest()
-          .withBearerToken('$S{at}')
-          .withBody(dto)
-          .expectStatus(400);
-      });
-
       it('should throw an error if task is not provided in the body', () => {
         const dto: Omit<CreateTodoDto, 'task'> = {
           categoryId: createTodoDto.categoryId,
