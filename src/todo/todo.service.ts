@@ -70,7 +70,7 @@ export class TodoService {
       const todo = await this.todoRepo.create(
         {
           userId: new Types.ObjectId(userId),
-          categoryId: new Types.ObjectId(dto.categoryId),
+          categoryId: dto.categoryId && new Types.ObjectId(dto.categoryId),
           task: dto.task,
           date: dto.date,
           description: dto.description,

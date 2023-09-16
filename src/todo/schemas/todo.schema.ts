@@ -8,8 +8,8 @@ export class Todo extends BaseEntity {
   @Prop({ required: true })
   userId: Types.ObjectId;
 
-  @Prop({ required: true })
-  categoryId: Types.ObjectId;
+  @Prop()
+  categoryId?: Types.ObjectId;
 
   @Prop({ required: true })
   task: string;
@@ -21,7 +21,7 @@ export class Todo extends BaseEntity {
   status?: TodoStatus;
 
   @Prop()
-  description: string;
+  description?: string;
 }
 
 export const TodoSchema = SchemaFactory.createForClass(Todo);

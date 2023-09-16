@@ -7,8 +7,8 @@ import {
 
 export class CreateTodoDto {
   @IsString()
-  @IsNotEmpty()
-  categoryId: string;
+  @IsOptional()
+  categoryId?: string;
 
   @IsString()
   @IsNotEmpty()
