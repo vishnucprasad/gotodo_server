@@ -1,9 +1,10 @@
 import { IsDateString, IsOptional, IsString } from 'class-validator';
+import { Types } from 'mongoose';
 
 export class EditTodoDto {
   @IsString()
   @IsOptional()
-  categoryId?: string;
+  categoryId?: string | Types.ObjectId;
 
   @IsString()
   @IsOptional()

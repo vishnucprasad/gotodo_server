@@ -94,6 +94,10 @@ export class TodoService {
   ): Promise<Todo> {
     const session = await this.todoRepo.startTransaction();
 
+    if (dto.categoryId) {
+      dto.categoryId = new Types.ObjectId(dto.categoryId);
+    }
+
     try {
       const todo = await this.todoRepo.findOneAndUpdate(
         { _id: new Types.ObjectId(todoId), userId: new Types.ObjectId(userId) },
