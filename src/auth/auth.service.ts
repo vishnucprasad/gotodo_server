@@ -116,6 +116,9 @@ export class AuthService {
       return new UserDto(user as unknown as UserDto);
     } catch (error) {
       await session.abortTransaction();
+      if (error.code === 11000) {
+        throw new ForbiddenException(`Email ${dto.email} already exists`);
+      }
       throw error;
     } finally {
       await session.endSession();
